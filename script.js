@@ -657,7 +657,7 @@ function renderCategories(searchTerm = "") {
                 <div class="category-info">
                     <span class="emoji-count">${
                       filteredEmojis.length
-                    } symbols</span>
+                    } emojis</span>
                     <button class="copy-all-btn" onclick="copyAllEmojis(event, '${categoryName}')">
                         Copy All
                     </button>
@@ -673,6 +673,7 @@ function renderCategories(searchTerm = "") {
                         <span class="emoji-punycode${
                           showPunycode ? " show" : ""
                         }">${punycode}</span>
+                        <a href="https://shakeshift.com/name/${punycode}" target="_blank" class="emoji-link" onclick="event.stopPropagation()" title="View in explorer">🔗</a>
                     </div>`;
                   })
                   .join("")}

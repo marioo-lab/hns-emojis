@@ -261,6 +261,7 @@ body {
   background: #f8f9fa;
   border: 2px solid transparent;
   text-align: center;
+  position: relative;
 }
 
 .emoji-item:hover {
@@ -290,6 +291,34 @@ body {
 
 .emoji-punycode.show {
   display: block;
+}
+
+.emoji-link {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  background: #667eea;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 8px;
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 10;
+}
+
+.emoji-item:hover .emoji-link {
+  opacity: 1;
+}
+
+.emoji-link:hover {
+  background: #5a6fd8;
+  transform: scale(1.1);
 }
 
 /* Toast Notification */
