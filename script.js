@@ -1,9 +1,50 @@
 // Global Variables
 let emojiData = {};
+let favorites = new Set();
 let copiedCount = 0;
 let showPunycode = false;
 let punycodeFormat = "punycode"; // 'punycode' or 'unicode'
 let darkMode = false;
+
+// Favorites Functions
+function loadFavorites() {
+  try {
+    const savedFavorites = localStorage.getItem("emoji-collector-favorites");
+    if (savedFavorites) {
+      favorites = new Set(JSON.parse(savedFavorites));
+    }
+  } catch (error) {
+    console.warn("Failed to load favorites:", error);
+    favorites = new Set();
+  }
+}
+
+function saveFavorites() {
+  try {
+    localStorage.setItem(
+      "emoji-collector-favorites",
+      JSON.stringify([...favorites])
+    );
+  } catch (error) {
+    console.warn("Failed to save favorites:", error);
+  }
+}
+
+function toggleFavorite(emoji) {
+  if (favorites.has(emoji)) {
+    favorites.delete(emoji);
+    showToast(`💔 Removed from favorites: ${emoji}`, "warning");
+  } else {
+    favorites.add(emoji);
+    showToast(`❤️ Added to favorites: ${emoji}`, "success");
+  }
+  saveFavorites();
+
+  // Re-render to update the favorites category and button states
+  const searchTerm = document.getElementById("searchInput").value.trim();
+  renderCategories(searchTerm);
+  updateStats();
+}
 
 // Dark Mode Functions
 function initializeDarkMode() {
@@ -116,8 +157,6 @@ async function loadEmojiData() {
     );
   } catch (error) {
     console.error("Error loading emoji data:", error);
-    loadFallbackData();
-    showToast("Failed to load data, using offline fallback", "warning");
   }
 }
 
@@ -303,368 +342,6 @@ function parseUnicodeEmojiData(textData) {
   return cleanedCategories;
 }
 
-// Fallback emoji data (comprehensive offline collection)
-function loadFallbackData() {
-  emojiData = {
-    "Smileys & Emotion": [
-      "😀",
-      "😃",
-      "😄",
-      "😁",
-      "😆",
-      "😅",
-      "😂",
-      "🤣",
-      "🥲",
-      "🥹",
-      "😊",
-      "😇",
-      "🙂",
-      "🙃",
-      "😉",
-      "😌",
-      "😍",
-      "🥰",
-      "😘",
-      "😗",
-      "😙",
-      "😚",
-      "😋",
-      "😛",
-      "😝",
-      "😜",
-      "🤪",
-      "🤨",
-      "🧐",
-      "🤓",
-      "😎",
-      "🥸",
-      "🤩",
-      "🥳",
-      "😏",
-      "😒",
-      "😞",
-      "😔",
-      "😟",
-      "😕",
-      "🙁",
-      "☹️",
-      "😣",
-      "😖",
-      "😫",
-      "😩",
-      "🥺",
-      "😢",
-      "😭",
-      "😤",
-      "😠",
-      "😡",
-      "🤬",
-      "🤯",
-      "😳",
-      "🥵",
-      "🥶",
-      "😱",
-      "😨",
-      "😰",
-      "😥",
-      "😓",
-      "🤗",
-      "🤔",
-    ],
-    "People & Body": [
-      "👋",
-      "🤚",
-      "🖐️",
-      "✋",
-      "🖖",
-      "👌",
-      "🤌",
-      "🤏",
-      "✌️",
-      "🤞",
-      "🫰",
-      "🤟",
-      "🤘",
-      "🤙",
-      "👈",
-      "👉",
-      "👆",
-      "🖕",
-      "👇",
-      "☝️",
-      "👍",
-      "👎",
-      "👊",
-      "✊",
-      "🤛",
-      "🤜",
-      "👏",
-      "🙌",
-      "👐",
-      "🤲",
-      "🤝",
-      "🙏",
-    ],
-    "Animals & Nature": [
-      "🐶",
-      "🐱",
-      "🐭",
-      "🐹",
-      "🐰",
-      "🦊",
-      "🐻",
-      "🐼",
-      "🐨",
-      "🐯",
-      "🦁",
-      "🐮",
-      "🐷",
-      "🐸",
-      "🐵",
-      "🐔",
-      "🐧",
-      "🐦",
-      "🐤",
-      "🐣",
-      "🐥",
-      "🦆",
-      "🦅",
-      "🦉",
-      "🦇",
-      "🐺",
-      "🐗",
-      "🐴",
-      "🦄",
-      "🐝",
-      "🪲",
-      "🦋",
-      "🌸",
-      "💮",
-      "🌹",
-      "🥀",
-      "🌺",
-      "🌻",
-      "🌼",
-      "🌷",
-      "🌱",
-      "🪴",
-      "🌲",
-      "🌳",
-      "🌴",
-      "🌵",
-      "🌾",
-      "🌿",
-    ],
-    "Food & Drink": [
-      "🍎",
-      "🍊",
-      "🍋",
-      "🍌",
-      "🍉",
-      "🍇",
-      "🍓",
-      "🫐",
-      "🍈",
-      "🍑",
-      "🍒",
-      "🥭",
-      "🍍",
-      "🥥",
-      "🥝",
-      "🍅",
-      "🍆",
-      "🥑",
-      "🥦",
-      "🥬",
-      "🥒",
-      "🌶️",
-      "🫑",
-      "🌽",
-      "🥕",
-      "🫒",
-      "🧄",
-      "🧅",
-      "🥔",
-      "🍠",
-      "🥐",
-      "🍞",
-      "🥖",
-      "🥨",
-      "🧀",
-      "🥚",
-      "🍳",
-      "🧈",
-      "🥞",
-      "🧇",
-      "🥓",
-      "🥩",
-      "🍗",
-      "🍖",
-      "🦴",
-      "🌭",
-      "🍔",
-    ],
-    "Travel & Places": [
-      "🚗",
-      "🚕",
-      "🚙",
-      "🚌",
-      "🚎",
-      "🏎️",
-      "🚓",
-      "🚑",
-      "🚒",
-      "🚐",
-      "🛻",
-      "🚚",
-      "🚛",
-      "🚜",
-      "🏍️",
-      "🛵",
-      "🚲",
-      "🛼",
-      "🛹",
-      "🚁",
-      "🚟",
-      "🚠",
-      "🚡",
-      "⛴️",
-      "🚤",
-      "🛥️",
-      "🛩️",
-      "✈️",
-      "🚀",
-      "🛸",
-      "🏠",
-      "🏡",
-    ],
-    Activities: [
-      "⚽",
-      "🏀",
-      "🏈",
-      "⚾",
-      "🥎",
-      "🎾",
-      "🏐",
-      "🏉",
-      "🎱",
-      "🪀",
-      "🏓",
-      "🏸",
-      "🏒",
-      "🏑",
-      "🥍",
-      "🏏",
-      "⛳",
-      "🪁",
-      "🏹",
-      "🎣",
-      "🤿",
-      "🥊",
-      "🥋",
-      "🎽",
-      "🛹",
-      "🛷",
-      "⛸️",
-      "🥌",
-      "🎿",
-      "⛷️",
-      "🏂",
-      "🪂",
-    ],
-    Objects: [
-      "📱",
-      "📲",
-      "💻",
-      "⌨️",
-      "🖥️",
-      "🖨️",
-      "🖱️",
-      "🖲️",
-      "🕹️",
-      "💽",
-      "💾",
-      "💿",
-      "📀",
-      "📼",
-      "📷",
-      "📸",
-      "📹",
-      "🎥",
-      "📽️",
-      "🎞️",
-      "📞",
-      "☎️",
-      "📟",
-      "📠",
-      "📺",
-      "📻",
-      "🎙️",
-      "🎚️",
-      "🎛️",
-      "⏰",
-      "⏲️",
-      "⏱️",
-    ],
-    Symbols: [
-      "❤️",
-      "🧡",
-      "💛",
-      "💚",
-      "💙",
-      "💜",
-      "🖤",
-      "🤍",
-      "🤎",
-      "💔",
-      "❣️",
-      "💕",
-      "💞",
-      "💓",
-      "💗",
-      "💖",
-      "✨",
-      "💫",
-      "💥",
-      "💢",
-      "💦",
-      "💨",
-      "🕳️",
-      "💬",
-      "💭",
-      "🗯️",
-      "💤",
-      "👁️‍🗨️",
-      "🔥",
-      "💯",
-      "♨️",
-      "💈",
-    ],
-    Flags: [
-      "🏁",
-      "🚩",
-      "🎌",
-      "🏴",
-      "🏳️",
-      "🏳️‍🌈",
-      "🏳️‍⚧️",
-      "🏴‍☠️",
-      "🇦🇫",
-      "🇦🇱",
-      "🇩🇿",
-      "🇦🇸",
-      "🇦🇩",
-      "🇦🇴",
-      "🇦🇮",
-      "🇦🇶",
-    ],
-  };
-
-  renderCategories();
-  updateStats();
-}
-
 // Render all categories with optional search filter
 function renderCategories(searchTerm = "") {
   const container = document.getElementById("categoriesContainer");
@@ -672,6 +349,29 @@ function renderCategories(searchTerm = "") {
 
   let hasResults = false;
 
+  // Prepare categories to render, with favorites first
+  const categoriesToRender = [];
+
+  // Add favorites category if there are any favorites
+  if (favorites.size > 0) {
+    let favoritesArray = [...favorites];
+
+    // Apply search filter to favorites if searching
+    if (searchTerm) {
+      favoritesArray = favoritesArray.filter(
+        (emoji) =>
+          emoji.includes(searchTerm) ||
+          "favorites".toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (favoritesArray.length > 0) {
+      categoriesToRender.push(["⭐ Favorites", favoritesArray, true]);
+      hasResults = true;
+    }
+  }
+
+  // Add regular categories
   Object.entries(emojiData).forEach(([categoryName, emojis]) => {
     let filteredEmojis = emojis;
 
@@ -690,32 +390,48 @@ function renderCategories(searchTerm = "") {
     }
 
     hasResults = true;
+    categoriesToRender.push([categoryName, filteredEmojis, false]);
+  });
 
+  // Render all categories
+  categoriesToRender.forEach(([categoryName, emojis, isFavorites]) => {
     // Create category element
     const categoryDiv = document.createElement("div");
     categoryDiv.className = "category";
+    if (isFavorites) {
+      categoryDiv.classList.add("favorites-category");
+    }
+
     categoryDiv.innerHTML = `
             <div class="category-header" onclick="toggleCategory('${categoryName}')">
                 <h2>${categoryName}</h2>
                 <div class="category-info">
-                    <span class="emoji-count">${
-                      filteredEmojis.length
-                    } emojis</span>
-                    <button class="copy-all-btn" onclick="copyAllEmojis(event, '${categoryName}')">
+                    <span class="emoji-count">${emojis.length} emoji${
+      emojis.length === 1 ? "" : "s"
+    }</span>
+                    <button class="copy-all-btn" onclick="copyAllEmojis(event, '${categoryName}', ${isFavorites})">
                         Copy All
                     </button>
                     <span class="toggle-icon">▼</span>
                 </div>
             </div>
             <div class="emoji-grid" id="grid-${categoryName}">
-                ${filteredEmojis
+                ${emojis
                   .map((emoji) => {
                     const punycode = emojiToPunycode(emoji);
+                    const isFavorited = favorites.has(emoji);
                     return `<div class="emoji-item" onclick="copyEmoji('${emoji}', this)" title="Click to copy: ${emoji} (${punycode})">
                         <span class="emoji-character">${emoji}</span>
                         <span class="emoji-punycode${
                           showPunycode ? " show" : ""
                         }">${punycode}</span>
+                        <button class="favorite-btn ${
+                          isFavorited ? "favorited" : ""
+                        }" onclick="event.stopPropagation(); toggleFavorite('${emoji}')" title="${
+                      isFavorited ? "Remove from favorites" : "Add to favorites"
+                    }">
+                            ${isFavorited ? "❤️" : "🩶"}
+                        </button>
                         <a href="https://shakeshift.com/name/${punycode}" target="_blank" class="emoji-link" onclick="event.stopPropagation()" title="View in explorer">🔗</a>
                     </div>`;
                   })
@@ -743,7 +459,8 @@ function updateStats() {
     (sum, arr) => sum + arr.length,
     0
   );
-  const totalCategories = Object.keys(emojiData).length;
+  const totalCategories =
+    Object.keys(emojiData).length + (favorites.size > 0 ? 1 : 0);
 
   document.getElementById("totalEmojis").textContent =
     totalEmojis.toLocaleString();
@@ -847,10 +564,16 @@ async function copyEmoji(emoji, element, copyPunycode = false) {
 }
 
 // Copy all emojis from a category
-async function copyAllEmojis(event, categoryName) {
+async function copyAllEmojis(event, categoryName, isFavorites = false) {
   event.stopPropagation(); // Prevent category toggle
 
-  const emojis = emojiData[categoryName];
+  let emojis;
+  if (isFavorites) {
+    emojis = [...favorites];
+  } else {
+    emojis = emojiData[categoryName];
+  }
+
   let emojiString = emojis.join("\n");
 
   try {
@@ -918,8 +641,9 @@ function showToast(message, type = "success") {
 
 // Event Listeners
 document.addEventListener("DOMContentLoaded", function () {
-  // Initialize dark mode first
+  // Initialize dark mode and favorites first
   initializeDarkMode();
+  loadFavorites();
 
   // Search functionality with debouncing
   const searchInput = document.getElementById("searchInput");
@@ -992,3 +716,4 @@ window.copyEmoji = copyEmoji;
 window.copyAllEmojis = copyAllEmojis;
 window.togglePunycode = togglePunycode;
 window.toggleDarkMode = toggleDarkMode;
+window.toggleFavorite = toggleFavorite;

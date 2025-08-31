@@ -250,6 +250,15 @@ body {
   transition: background-color 0.3s ease;
 }
 
+.favorites-category {
+  border: 2px solid var(--accent-color);
+  background: linear-gradient(
+    135deg,
+    var(--bg-secondary) 0%,
+    rgba(76, 110, 245, 0.05) 100%
+  );
+}
+
 .category-header {
   background: linear-gradient(
     135deg,
@@ -370,19 +379,51 @@ body {
   position: absolute;
   bottom: 2px;
   right: 2px;
-  width: 18px;
-  height: 18px;
-  background: var(--accent-color);
+  width: 20px;
+  height: 20px;
+  background: transparent;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 8px;
+  font-size: 12px;
   text-decoration: none;
   opacity: 0;
   transition: opacity 0.2s, background-color 0.3s;
   z-index: 10;
+}
+
+.favorite-btn {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.1s;
+  z-index: 10;
+}
+
+.favorite-btn:hover {
+  background: var(--gradient-start);
+  transform: scale(1.2);
+}
+
+.favorite-btn.favorited {
+  opacity: 1;
+}
+
+.emoji-item:hover .favorite-btn {
+  opacity: 1;
 }
 
 .emoji-item:hover .emoji-link {
@@ -391,7 +432,7 @@ body {
 
 .emoji-link:hover {
   background: var(--gradient-start);
-  transform: scale(1.1);
+  transform: scale(1.2);
 }
 
 /* Toast Notification */
