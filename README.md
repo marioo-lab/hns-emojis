@@ -1,4 +1,4 @@
-# 📚 Emoji Collector - Unicode.org Official Data
+# 🤪 Emoji Collector - Unicode.org Official Data
 
 ## 🌐 Overview
 
