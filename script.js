@@ -29,7 +29,7 @@ function emojiToPunycode(emoji) {
 // Load emoji data from Unicode.org official emoji test file and local JSON files
 async function loadEmojiData() {
   try {
-    showToast("Loading emojis from Unicode.org and local files...", "info");
+    showToast("Loading emojis & symbols...", "info");
 
     // Load from both Unicode.org and local JSON files
     const [unicodeData, localData] = await Promise.allSettled([
