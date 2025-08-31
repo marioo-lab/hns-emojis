@@ -79,7 +79,7 @@ async function loadEmojiData() {
 
 // Load from Unicode.org
 async function loadFromUnicodeOrg() {
-  const response = await fetch("/data/emoji-test.txt");
+  const response = await fetch("data/emoji-test.txt");
 
   if (!response.ok) {
     throw new Error(`Failed to load Unicode data: ${response.status}`);
