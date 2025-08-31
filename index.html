@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Emoji Collector - Browse and Copy</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="shortcut icon" href="favicon.ico" />
+  </head>
+  <body>
+    <header class="header">
+      <h1>😂 Emoji Collector</h1>
+      <p>Browse, search, and bulk copy emojis by category</p>
+    </header>
+
+    <div class="container">
+      <div class="stats" id="stats">
+        <div class="stat">
+          <div class="stat-number" id="totalEmojis">0</div>
+          <div class="stat-label">Total Emojis</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number" id="totalCategories">0</div>
+          <div class="stat-label">Categories</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number" id="copiedCount">0</div>
+          <div class="stat-label">Copied Today</div>
+        </div>
+      </div>
+
+      <div class="view-options">
+        <label class="toggle-switch">
+          <input type="checkbox" id="showPunycode" />
+          <span class="slider"></span>
+          <span class="toggle-label">Show Punycode</span>
+        </label>
+      </div>
+
+      <div class="search-bar">
+        <input
+          type="text"
+          class="search-input"
+          id="searchInput"
+          placeholder="Search emojis... (try 'heart', 'face', 'card')"
+        />
+      </div>
+
+      <div id="categoriesContainer"></div>
+    </div>
+
+    <div class="toast" id="toast">
+      <span id="toastMessage">Emoji copied to clipboard!</span>
+    </div>
+
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/punycode/2.3.1/punycode.min.js"></script>
+    <!-- Main JavaScript -->
+    <script src="script.js"></script>
+  </body>
+</html>
