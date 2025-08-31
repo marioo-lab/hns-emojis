@@ -3,6 +3,50 @@ let emojiData = {};
 let copiedCount = 0;
 let showPunycode = false;
 let punycodeFormat = "punycode"; // 'punycode' or 'unicode'
+let darkMode = false;
+
+// Dark Mode Functions
+function initializeDarkMode() {
+  // Check localStorage for saved theme preference
+  const savedTheme = localStorage.getItem("emoji-collector-theme");
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+  // Set initial theme
+  if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+    enableDarkMode();
+  } else {
+    disableDarkMode();
+  }
+
+  // Update toggle state
+  document.getElementById("darkMode").checked = darkMode;
+}
+
+function enableDarkMode() {
+  darkMode = true;
+  document.documentElement.setAttribute("data-theme", "dark");
+  localStorage.setItem("emoji-collector-theme", "dark");
+}
+
+function disableDarkMode() {
+  darkMode = false;
+  document.documentElement.removeAttribute("data-theme");
+  localStorage.setItem("emoji-collector-theme", "light");
+}
+
+function toggleDarkMode() {
+  if (darkMode) {
+    disableDarkMode();
+  } else {
+    enableDarkMode();
+  }
+
+  // Show theme change notification
+  showToast(
+    darkMode ? "🌙 Dark mode enabled" : "☀️ Light mode enabled",
+    "info"
+  );
+}
 
 // Convert emoji to punycode or unicode
 function emojiToPunycode(emoji) {
@@ -264,7 +308,7 @@ function loadFallbackData() {
   emojiData = {
     "Smileys & Emotion": [
       "😀",
-      "",
+      "😃",
       "😄",
       "😁",
       "😆",
@@ -346,7 +390,7 @@ function loadFallbackData() {
       "👈",
       "👉",
       "👆",
-      "",
+      "🖕",
       "👇",
       "☝️",
       "👍",
@@ -393,10 +437,10 @@ function loadFallbackData() {
       "🐴",
       "🦄",
       "🐝",
-      "🐛",
+      "🪲",
       "🦋",
       "🌸",
-      "💐",
+      "💮",
       "🌹",
       "🥀",
       "🌺",
@@ -414,7 +458,6 @@ function loadFallbackData() {
     ],
     "Food & Drink": [
       "🍎",
-      "",
       "🍊",
       "🍋",
       "🍌",
@@ -423,14 +466,14 @@ function loadFallbackData() {
       "🍓",
       "🫐",
       "🍈",
-      "🍒",
       "🍑",
+      "🍒",
       "🥭",
       "🍍",
       "🥥",
       "🥝",
       "🍅",
-      "",
+      "🍆",
       "🥑",
       "🥦",
       "🥬",
@@ -464,7 +507,7 @@ function loadFallbackData() {
     ],
     "Travel & Places": [
       "🚗",
-      "",
+      "🚕",
       "🚙",
       "🚌",
       "🚎",
@@ -480,7 +523,7 @@ function loadFallbackData() {
       "🏍️",
       "🛵",
       "🚲",
-      "�",
+      "🛼",
       "🛹",
       "🚁",
       "🚟",
@@ -729,10 +772,12 @@ function togglePunycode() {
   });
 
   // Enable/disable format options
-  if (showPunycode) {
-    formatOptions.classList.add("enabled");
-  } else {
-    formatOptions.classList.remove("enabled");
+  if (formatOptions) {
+    if (showPunycode) {
+      formatOptions.classList.add("enabled");
+    } else {
+      formatOptions.classList.remove("enabled");
+    }
   }
 }
 
@@ -740,13 +785,15 @@ function togglePunycode() {
 function updatePunycodeFormat() {
   const selectedFormat = document.querySelector(
     'input[name="punycodeFormat"]:checked'
-  ).value;
-  punycodeFormat = selectedFormat;
+  );
+  if (selectedFormat) {
+    punycodeFormat = selectedFormat.value;
 
-  if (showPunycode) {
-    // Re-render to update punycode display
-    const searchTerm = document.getElementById("searchInput").value.trim();
-    renderCategories(searchTerm);
+    if (showPunycode) {
+      // Re-render to update punycode display
+      const searchTerm = document.getElementById("searchInput").value.trim();
+      renderCategories(searchTerm);
+    }
   }
 }
 
@@ -871,6 +918,9 @@ function showToast(message, type = "success") {
 
 // Event Listeners
 document.addEventListener("DOMContentLoaded", function () {
+  // Initialize dark mode first
+  initializeDarkMode();
+
   // Search functionality with debouncing
   const searchInput = document.getElementById("searchInput");
   let searchTimeout;
@@ -882,6 +932,11 @@ document.addEventListener("DOMContentLoaded", function () {
       renderCategories(searchTerm);
     }, 300); // 300ms debounce
   });
+
+  // Dark mode toggle
+  document
+    .getElementById("darkMode")
+    .addEventListener("change", toggleDarkMode);
 
   // Punycode toggle
   document
@@ -896,9 +951,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // Initialize the application
   loadEmojiData();
 });
-
-// Handle search input with debouncing for better performance
-// (This functionality is now integrated into the main DOMContentLoaded event listener above)
 
 // Keyboard shortcuts
 document.addEventListener("keydown", function (e) {
@@ -924,6 +976,14 @@ document.addEventListener("keydown", function (e) {
     punycodeToggle.checked = !punycodeToggle.checked;
     togglePunycode();
   }
+
+  // Toggle dark mode with Ctrl+D or Cmd+D
+  if ((e.ctrlKey || e.metaKey) && e.key === "d") {
+    e.preventDefault();
+    const darkModeToggle = document.getElementById("darkMode");
+    darkModeToggle.checked = !darkModeToggle.checked;
+    toggleDarkMode();
+  }
 });
 
 // Export functions for global access
@@ -931,3 +991,4 @@ window.toggleCategory = toggleCategory;
 window.copyEmoji = copyEmoji;
 window.copyAllEmojis = copyAllEmojis;
 window.togglePunycode = togglePunycode;
+window.toggleDarkMode = toggleDarkMode;
