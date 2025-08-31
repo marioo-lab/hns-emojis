@@ -91,7 +91,14 @@ async function loadFromUnicodeOrg() {
 
 // Load from local JSON files in data folder
 async function loadFromLocalJSON() {
-  const jsonFiles = ["card-pack.json", "domino-pack.json", "mahjong-pack.json"];
+  const jsonFiles = [
+    "card-symbol-pack.json",
+    "domino-symbol-pack.json",
+    "mahjong-symbol-pack.json",
+    "card-suit-symbol-pack.json",
+    "chess-symbol-pack.json",
+    "star-symbol-pack.json",
+  ];
 
   const localData = {};
 
@@ -650,7 +657,7 @@ function renderCategories(searchTerm = "") {
                 <div class="category-info">
                     <span class="emoji-count">${
                       filteredEmojis.length
-                    } emojis</span>
+                    } symbols</span>
                     <button class="copy-all-btn" onclick="copyAllEmojis(event, '${categoryName}')">
                         Copy All
                     </button>
@@ -749,14 +756,33 @@ async function copyEmoji(emoji, element, copyPunycode = false) {
 
     // If Ctrl/Cmd is held while clicking, copy punycode instead
     if (event && (event.ctrlKey || event.metaKey)) {
-      textToCopy = emojiToPunycode(emoji);
-      copyPunycode = true;
+      // Check if we should append to clipboard
+      if (event.ctrlKey) {
+        try {
+          const currentClipboard = await navigator.clipboard.readText();
+          textToCopy = currentClipboard + "\n" + emoji;
+        } catch (err) {
+          // Fallback if can't read clipboard
+          textToCopy = emoji;
+        }
+        // Update counter
+        copiedCount++;
+      } else {
+        // Cmd key - copy punycode
+        textToCopy = emojiToPunycode(emoji);
+        copyPunycode = true;
+        copiedCount = 1;
+      }
+    } else {
+      copiedCount = 1;
     }
 
     await navigator.clipboard.writeText(textToCopy);
 
     if (copyPunycode) {
-      showToast(`Copied punycode: ${textToCopy}`);
+      showToast(`Copied punycode: ${emojiToPunycode(emoji)}`);
+    } else if (event && event.ctrlKey) {
+      showToast(`Appended: ${emoji}`);
     } else {
       showToast(`Copied: ${emoji}`);
     }
@@ -765,8 +791,6 @@ async function copyEmoji(emoji, element, copyPunycode = false) {
     element.classList.add("copied");
     setTimeout(() => element.classList.remove("copied"), 1000);
 
-    // Update counter
-    copiedCount++;
     document.getElementById("copiedCount").textContent = copiedCount;
   } catch (err) {
     console.error("Failed to copy: ", err);
@@ -779,14 +803,32 @@ async function copyAllEmojis(event, categoryName) {
   event.stopPropagation(); // Prevent category toggle
 
   const emojis = emojiData[categoryName];
-  const emojiString = emojis.join("\n");
+  let emojiString = emojis.join("\n");
 
   try {
+    // If Ctrl is held, append to clipboard
+    if (event.ctrlKey) {
+      try {
+        const currentClipboard = await navigator.clipboard.readText();
+        emojiString = currentClipboard + "\n" + emojiString;
+      } catch (err) {
+        // Fallback if can't read clipboard - just copy normally
+        console.warn("Could not read clipboard for append:", err);
+      }
+      copiedCount += emojis.length;
+    } else {
+      copiedCount = emojis.length;
+    }
+
     await navigator.clipboard.writeText(emojiString);
-    showToast(`Copied ${emojis.length} emojis from ${categoryName}!`);
+
+    if (event.ctrlKey) {
+      showToast(`Appended ${emojis.length} emojis from ${categoryName}!`);
+    } else {
+      showToast(`Copied ${emojis.length} emojis from ${categoryName}!`);
+    }
 
     // Update counter
-    copiedCount += emojis.length;
     document.getElementById("copiedCount").textContent = copiedCount;
   } catch (err) {
     console.error("Failed to copy: ", err);

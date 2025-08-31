@@ -9,15 +9,20 @@
   </head>
   <body>
     <header class="header">
-      <h1>😂 Emoji Collector</h1>
-      <p>Browse, search, and bulk copy emojis by category</p>
+      <h1>😂 <b>Emoji Collector</b></h1>
+      <h4>Browse, search, and bulk copy emojis by category</h4>
+      <small
+        >Using
+        <a href="https://home.unicode.org/" target="_blank">Unicode.org</a>
+        official data</small
+      >
     </header>
 
     <div class="container">
       <div class="stats" id="stats">
         <div class="stat">
           <div class="stat-number" id="totalEmojis">0</div>
-          <div class="stat-label">Total Emojis</div>
+          <div class="stat-label">Total Symbols</div>
         </div>
         <div class="stat">
           <div class="stat-number" id="totalCategories">0</div>
@@ -25,7 +30,7 @@
         </div>
         <div class="stat">
           <div class="stat-number" id="copiedCount">0</div>
-          <div class="stat-label">Copied Today</div>
+          <div class="stat-label">Copied</div>
         </div>
       </div>
 
@@ -42,7 +47,7 @@
           type="text"
           class="search-input"
           id="searchInput"
-          placeholder="Search emojis... (try 'heart', 'face', 'card')"
+          placeholder="Search symbols... (try 'heart', 'face', 'card')"
         />
       </div>
 
@@ -50,7 +55,7 @@
     </div>
 
     <div class="toast" id="toast">
-      <span id="toastMessage">Emoji copied to clipboard!</span>
+      <span id="toastMessage">Symbol copied to clipboard!</span>
     </div>
 
     <!-- External Libraries -->
