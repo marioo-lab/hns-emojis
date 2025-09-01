@@ -4,6 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Emoji Collector - Browse and Copy</title>
+    <script>
+      (function () {
+        const savedTheme = localStorage.getItem("emoji-collector-theme");
+        const prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+
+        if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
     <link rel="stylesheet" href="styles.css" />
     <link rel="shortcut icon" href="favicon.ico" />
   </head>
