@@ -432,7 +432,9 @@ function renderCategories(searchTerm = "") {
                     }">
                             ${isFavorited ? "❤️" : "🩶"}
                         </button>
-                        <a href="https://shakeshift.com/name/${punycode}" target="_blank" class="emoji-link" onclick="event.stopPropagation()" title="View in explorer">🔗</a>
+                        <a href="https://www.namebase.io/domains/${punycode}" target="_blank" class="emoji-link" style="left: 2px;" onclick="event.stopPropagation()" title="View on Namebase"><img src="nb-logo.png" width="12" ></a>
+                        <a href="https://shakestation.io/domain/${punycode}" target="_blank" class="emoji-link" style="left: 20px;" onclick="event.stopPropagation()" title="View on Shakestation"><img src="ss-logo.png" width="12" ></a>
+                        <a href="https://shakeshift.com/name/${punycode}" target="_blank" class="emoji-link" onclick="event.stopPropagation()" title="View in explorer">🔍</a>
                     </div>`;
                   })
                   .join("")}

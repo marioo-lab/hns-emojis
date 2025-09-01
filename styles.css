@@ -183,7 +183,7 @@ body {
 .stats {
   background: var(--bg-secondary);
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1rem;
   margin-bottom: 2rem;
   box-shadow: var(--shadow);
   display: flex;
@@ -191,6 +191,9 @@ body {
   flex-wrap: wrap;
   gap: 1rem;
   transition: background-color 0.3s ease;
+  position: sticky;
+  top: 1px; /* Small offset from viewport top */
+  z-index: 999;
 }
 
 .stat {
@@ -414,8 +417,7 @@ body {
 }
 
 .favorite-btn:hover {
-  background: var(--gradient-start);
-  transform: scale(1.2);
+  transform: scale(1.4);
 }
 
 .favorite-btn.favorited {
@@ -431,8 +433,7 @@ body {
 }
 
 .emoji-link:hover {
-  background: var(--gradient-start);
-  transform: scale(1.2);
+  transform: scale(1.4);
 }
 
 /* Toast Notification */
