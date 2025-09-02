@@ -486,6 +486,7 @@ body {
   .stats {
     flex-direction: column;
     text-align: center;
+    position: static; /* Remove sticky positioning on mobile */
   }
 
   .category-header {

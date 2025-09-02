@@ -6,6 +6,12 @@ let showPunycode = false;
 let showAll = false;
 let darkMode = false;
 
+// Infinite scroll variables
+let currentDisplayedCategories = 0;
+let categoriesPerPage = 5;
+let allCategoriesToRender = [];
+let isLoading = false;
+
 // Favorites Functions
 function loadFavorites() {
   try {
@@ -332,59 +338,95 @@ function parseUnicodeEmojiData(textData) {
   return cleanedCategories;
 }
 
-// Render all categories with optional search filter
+// Render all categories with optional search filter and infinite scroll
 function renderCategories(searchTerm = "") {
   const container = document.getElementById("categoriesContainer");
-  container.innerHTML = "";
+
+  // If this is a new search, reset pagination
+  if (searchTerm !== (renderCategories.lastSearchTerm || "")) {
+    container.innerHTML = "";
+    currentDisplayedCategories = 0;
+    renderCategories.lastSearchTerm = searchTerm;
+  }
 
   let hasResults = false;
 
   // Prepare categories to render, with favorites first
-  const categoriesToRender = [];
+  if (currentDisplayedCategories === 0) {
+    allCategoriesToRender = [];
 
-  // Add favorites category if there are any favorites
-  if (favorites.size > 0) {
-    let favoritesArray = [...favorites];
+    // Add favorites category if there are any favorites
+    if (favorites.size > 0) {
+      let favoritesArray = [...favorites];
 
-    // Apply search filter to favorites if searching
-    if (searchTerm) {
-      favoritesArray = favoritesArray.filter(
-        (emoji) =>
-          emoji.includes(searchTerm) ||
-          "favorites".toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      // Apply search filter to favorites if searching
+      if (searchTerm) {
+        favoritesArray = favoritesArray.filter(
+          (emoji) =>
+            emoji.includes(searchTerm) ||
+            "favorites".toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+
+      if (favoritesArray.length > 0) {
+        allCategoriesToRender.push(["⭐ Favorites", favoritesArray, true]);
+        hasResults = true;
+      }
     }
 
-    if (favoritesArray.length > 0) {
-      categoriesToRender.push(["⭐ Favorites", favoritesArray, true]);
+    // Add regular categories
+    Object.entries(emojiData).forEach(([categoryName, emojis]) => {
+      let filteredEmojis = emojis;
+
+      // Apply search filter
+      if (searchTerm) {
+        filteredEmojis = emojis.filter(
+          (emoji) =>
+            emoji.includes(searchTerm) ||
+            categoryName.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+
+      // Skip empty categories when searching
+      if (filteredEmojis.length === 0 && searchTerm) {
+        return;
+      }
+
       hasResults = true;
-    }
+      allCategoriesToRender.push([categoryName, filteredEmojis, false]);
+    });
   }
 
-  // Add regular categories
-  Object.entries(emojiData).forEach(([categoryName, emojis]) => {
-    let filteredEmojis = emojis;
+  // Load more categories
+  loadMoreCategories();
 
-    // Apply search filter
-    if (searchTerm) {
-      filteredEmojis = emojis.filter(
-        (emoji) =>
-          emoji.includes(searchTerm) ||
-          categoryName.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+  // Show no results message if search yielded nothing
+  if (!hasResults && searchTerm && currentDisplayedCategories === 0) {
+    container.innerHTML = `
+      <div class="no-results">
+        <h2>🔍 No emojis found</h2>
+        <p>Try a different search term or browse categories above</p>
+      </div>
+    `;
+  }
+}
 
-    // Skip empty categories when searching
-    if (filteredEmojis.length === 0 && searchTerm) {
-      return;
-    }
+// Load more categories for infinite scroll
+function loadMoreCategories() {
+  if (isLoading || currentDisplayedCategories >= allCategoriesToRender.length) {
+    return;
+  }
 
-    hasResults = true;
-    categoriesToRender.push([categoryName, filteredEmojis, false]);
-  });
+  isLoading = true;
+  const container = document.getElementById("categoriesContainer");
+  const endIndex = Math.min(
+    currentDisplayedCategories + categoriesPerPage,
+    allCategoriesToRender.length
+  );
 
-  // Render all categories
-  categoriesToRender.forEach(([categoryName, emojis, isFavorites]) => {
+  for (let i = currentDisplayedCategories; i < endIndex; i++) {
+    const [categoryName, emojis, isFavorites] = allCategoriesToRender[i];
+
     // Create category element
     const categoryDiv = document.createElement("div");
     categoryDiv.className = "category";
@@ -393,56 +435,49 @@ function renderCategories(searchTerm = "") {
     }
 
     categoryDiv.innerHTML = `
-            <div class="category-header" onclick="toggleCategory('${categoryName}')">
-                <h2>${categoryName}</h2>
-                <div class="category-info">
-                    <span class="emoji-count">${emojis.length} emoji${
+      <div class="category-header" onclick="toggleCategory('${categoryName}')">
+        <h2>${categoryName}</h2>
+        <div class="category-info">
+          <span class="emoji-count">${emojis.length} emoji${
       emojis.length === 1 ? "" : "s"
     }</span>
-                    <button class="copy-all-btn" onclick="copyAllEmojis(event, '${categoryName}', ${isFavorites})">
-                        Copy All
-                    </button>
-                    <span class="toggle-icon">▼</span>
-                </div>
-            </div>
-            <div class="emoji-grid" id="grid-${categoryName}">
-                ${emojis
-                  .map((emoji) => {
-                    const punycode = emojiToPunycode(emoji);
-                    const isFavorited = favorites.has(emoji);
-                    return `<div class="emoji-item" onclick="copyEmoji(event, '${emoji}', this)" title="Click to copy: ${emoji} (${punycode})">
-                        <span class="emoji-character">${emoji}</span>
-                        <span class="emoji-punycode${
-                          showPunycode ? " show" : ""
-                        }">${punycode}</span>
-                        <button class="favorite-btn ${
-                          isFavorited ? "favorited" : ""
-                        }" onclick="event.stopPropagation(); toggleFavorite('${emoji}')" title="${
-                      isFavorited ? "Remove from favorites" : "Add to favorites"
-                    }">
-                            ${isFavorited ? "❤️" : "🩶"}
-                        </button>
-                        <a href="https://www.namebase.io/domains/${punycode}" target="_blank" class="emoji-link" style="left: 2px;" onclick="event.stopPropagation()" title="View on Namebase"><img src="nb-logo.png" width="12" ></a>
-                        <a href="https://shakestation.io/domain/${punycode}" target="_blank" class="emoji-link" style="left: 20px;" onclick="event.stopPropagation()" title="View on Shakestation"><img src="ss-logo.png" width="12" ></a>
-                        <a href="https://shakeshift.com/name/${punycode}" target="_blank" class="emoji-link" onclick="event.stopPropagation()" title="View in explorer">🔍</a>
-                    </div>`;
-                  })
-                  .join("")}
-            </div>
-        `;
+          <button class="copy-all-btn" onclick="copyAllEmojis(event, '${categoryName}', ${isFavorites})">
+            Copy All
+          </button>
+          <span class="toggle-icon">▼</span>
+        </div>
+      </div>
+      <div class="emoji-grid" id="grid-${categoryName}">
+        ${emojis
+          .map((emoji) => {
+            const punycode = emojiToPunycode(emoji);
+            const isFavorited = favorites.has(emoji);
+            return `<div class="emoji-item" onclick="copyEmoji(event, '${emoji}', this)" title="Click to copy: ${emoji} (${punycode})">
+              <span class="emoji-character">${emoji}</span>
+              <span class="emoji-punycode${
+                showPunycode ? " show" : ""
+              }">${punycode}</span>
+              <button class="favorite-btn ${
+                isFavorited ? "favorited" : ""
+              }" onclick="event.stopPropagation(); toggleFavorite('${emoji}')" title="${
+              isFavorited ? "Remove from favorites" : "Add to favorites"
+            }">
+                ${isFavorited ? "❤️" : "🩶"}
+              </button>
+              <a href="https://www.namebase.io/domains/${punycode}" target="_blank" class="emoji-link" style="left: 2px;" onclick="event.stopPropagation()" title="View on Namebase"><img src="nb-logo.png" width="12" ></a>
+              <a href="https://shakestation.io/domain/${punycode}" target="_blank" class="emoji-link" style="left: 20px;" onclick="event.stopPropagation()" title="View on Shakestation"><img src="ss-logo.png" width="12" ></a>
+              <a href="https://shakeshift.com/name/${punycode}" target="_blank" class="emoji-link" onclick="event.stopPropagation()" title="View in explorer">🔗</a>
+            </div>`;
+          })
+          .join("")}
+      </div>
+    `;
 
     container.appendChild(categoryDiv);
-  });
-
-  // Show no results message if search yielded nothing
-  if (!hasResults && searchTerm) {
-    container.innerHTML = `
-            <div class="no-results">
-                <h2>🔍 No emojis found</h2>
-                <p>Try a different search term or browse categories above</p>
-            </div>
-        `;
   }
+
+  currentDisplayedCategories = endIndex;
+  isLoading = false;
 }
 
 // Update statistics display
@@ -665,6 +700,18 @@ function showToast(message, type = "success") {
   }, 3000);
 }
 
+// Infinite scroll event listener
+function handleScroll() {
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  const windowHeight = window.innerHeight;
+  const documentHeight = document.documentElement.scrollHeight;
+
+  // Load more when user is within 1000px of bottom
+  if (scrollTop + windowHeight >= documentHeight - 1000) {
+    loadMoreCategories();
+  }
+}
+
 // Event Listeners
 document.addEventListener("DOMContentLoaded", function () {
   // Initialize dark mode and favorites first
@@ -695,6 +742,9 @@ document.addEventListener("DOMContentLoaded", function () {
   document
     .getElementById("showPunycode")
     .addEventListener("change", togglePunycode);
+
+  // Add scroll listener for infinite scroll
+  window.addEventListener("scroll", handleScroll);
 
   // Initialize the application
   loadEmojiData();
