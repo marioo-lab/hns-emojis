@@ -3,7 +3,7 @@ let emojiData = {};
 let favorites = new Set();
 let copiedCount = 0;
 let showPunycode = false;
-let punycodeFormat = "punycode"; // 'punycode' or 'unicode'
+let showAll = false;
 let darkMode = false;
 
 // Favorites Functions
@@ -91,23 +91,13 @@ function toggleDarkMode() {
 
 // Convert emoji to punycode or unicode
 function emojiToPunycode(emoji) {
-  if (punycodeFormat === "unicode") {
-    // Return Unicode code points
-    return Array.from(emoji)
-      .map((char) => {
-        const codePoint = char.codePointAt(0);
-        return `U+${codePoint.toString(16).toUpperCase().padStart(4, "0")}`;
-      })
-      .join(" ");
-  } else {
-    // Return actual punycode
-    try {
-      const encoded = punycode.encode(emoji);
-      return encoded ? `xn--${encoded}` : "Invalid";
-    } catch (error) {
-      console.warn("Punycode encoding failed for:", emoji, error);
-      return "Invalid";
-    }
+  // Return actual punycode
+  try {
+    const encoded = punycode.encode(emoji);
+    return encoded ? `xn--${encoded}` : "Invalid";
+  } catch (error) {
+    console.warn("Punycode encoding failed for:", emoji, error);
+    return "Invalid";
   }
 }
 
@@ -277,7 +267,7 @@ function parseUnicodeEmojiData(textData) {
           // Include fully-qualified, minimally-qualified, and component emojis
           if (
             status === "fully-qualified" ||
-            status === "minimally-qualified" ||
+            (showAll && status === "minimally-qualified") ||
             status === "component"
           ) {
             // Extract the actual emoji character (first part before any text)
@@ -470,6 +460,12 @@ function updateStats() {
   document.getElementById("copiedCount").textContent = copiedCount;
 }
 
+function toggleShowAll() {
+  showAll = !showAll;
+
+  loadEmojiData();
+}
+
 // Toggle category visibility
 function toggleCategory(categoryName) {
   const category = event.currentTarget.parentElement;
@@ -496,22 +492,6 @@ function togglePunycode() {
       formatOptions.classList.add("enabled");
     } else {
       formatOptions.classList.remove("enabled");
-    }
-  }
-}
-
-// Update punycode format and refresh display
-function updatePunycodeFormat() {
-  const selectedFormat = document.querySelector(
-    'input[name="punycodeFormat"]:checked'
-  );
-  if (selectedFormat) {
-    punycodeFormat = selectedFormat.value;
-
-    if (showPunycode) {
-      // Re-render to update punycode display
-      const searchTerm = document.getElementById("searchInput").value.trim();
-      renderCategories(searchTerm);
     }
   }
 }
@@ -708,15 +688,13 @@ document.addEventListener("DOMContentLoaded", function () {
     .getElementById("darkMode")
     .addEventListener("change", toggleDarkMode);
 
+  //All toggle
+  document.getElementById("showAll").addEventListener("change", toggleShowAll);
+
   // Punycode toggle
   document
     .getElementById("showPunycode")
     .addEventListener("change", togglePunycode);
-
-  // Format option changes
-  document.querySelectorAll('input[name="punycodeFormat"]').forEach((radio) => {
-    radio.addEventListener("change", updatePunycodeFormat);
-  });
 
   // Initialize the application
   loadEmojiData();
