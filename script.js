@@ -420,7 +420,7 @@ function renderCategories(searchTerm = "") {
                   .map((emoji) => {
                     const punycode = emojiToPunycode(emoji);
                     const isFavorited = favorites.has(emoji);
-                    return `<div class="emoji-item" onclick="copyEmoji('${emoji}', this)" title="Click to copy: ${emoji} (${punycode})">
+                    return `<div class="emoji-item" onclick="copyEmoji(event, '${emoji}', this)" title="Click to copy: ${emoji} (${punycode})">
                         <span class="emoji-character">${emoji}</span>
                         <span class="emoji-punycode${
                           showPunycode ? " show" : ""
@@ -517,28 +517,38 @@ function updatePunycodeFormat() {
 }
 
 // Copy emoji with optional punycode
-async function copyEmoji(emoji, element, copyPunycode = false) {
+async function copyEmoji(event, emoji, element, copyPunycode = false) {
+  event.stopPropagation();
+
   try {
     let textToCopy = emoji;
 
-    // If Ctrl/Cmd is held while clicking, copy punycode instead
+    // Handle modifier keys
     if (event && (event.ctrlKey || event.metaKey)) {
-      // Check if we should append to clipboard
-      if (event.ctrlKey) {
+      if (event.metaKey && event.ctrlKey) {
+        // Both Win/Cmd + Ctrl: append punycode
+        try {
+          const currentClipboard = await navigator.clipboard.readText();
+          textToCopy = currentClipboard + "\n" + emojiToPunycode(emoji);
+        } catch (err) {
+          textToCopy = emojiToPunycode(emoji);
+        }
+        copyPunycode = true;
+        copiedCount++;
+      } else if (event.metaKey) {
+        // Win/Cmd key alone: copy punycode
+        textToCopy = emojiToPunycode(emoji);
+        copyPunycode = true;
+        copiedCount = 1;
+      } else if (event.ctrlKey) {
+        // Ctrl key alone: append emoji
         try {
           const currentClipboard = await navigator.clipboard.readText();
           textToCopy = currentClipboard + "\n" + emoji;
         } catch (err) {
-          // Fallback if can't read clipboard
           textToCopy = emoji;
         }
-        // Update counter
         copiedCount++;
-      } else {
-        // Cmd key - copy punycode
-        textToCopy = emojiToPunycode(emoji);
-        copyPunycode = true;
-        copiedCount = 1;
       }
     } else {
       copiedCount = 1;
@@ -546,12 +556,22 @@ async function copyEmoji(emoji, element, copyPunycode = false) {
 
     await navigator.clipboard.writeText(textToCopy);
 
+    // Show appropriate toast message
     if (copyPunycode) {
-      showToast(`Copied punycode: ${emojiToPunycode(emoji)}`);
-    } else if (event && event.ctrlKey) {
-      showToast(`Appended: ${emoji}`);
+      if (
+        (event.metaKey && event.ctrlKey) ||
+        (event.ctrlKey && !event.metaKey)
+      ) {
+        showToast(`Appended punycode: ${emojiToPunycode(emoji)}`);
+      } else {
+        showToast(`Copied punycode: ${emojiToPunycode(emoji)}`);
+      }
     } else {
-      showToast(`Copied: ${emoji}`);
+      if (event && event.ctrlKey && !event.metaKey) {
+        showToast(`Appended: ${emoji}`);
+      } else {
+        showToast(`Copied: ${emoji}`);
+      }
     }
 
     // Visual feedback
@@ -576,36 +596,60 @@ async function copyAllEmojis(event, categoryName, isFavorites = false) {
     emojis = emojiData[categoryName];
   }
 
-  let emojiString = emojis.join("\n");
+  let contentToCopy;
+  let isUsingPunycode = false;
 
-  try {
-    // If Ctrl is held, append to clipboard
-    if (event.ctrlKey) {
-      try {
-        const currentClipboard = await navigator.clipboard.readText();
-        emojiString = currentClipboard + "\n" + emojiString;
-      } catch (err) {
-        // Fallback if can't read clipboard - just copy normally
-        console.warn("Could not read clipboard for append:", err);
-      }
+  // Determine what to copy based on modifier keys
+  if (event.metaKey && event.ctrlKey) {
+    // Both Win/Cmd + Ctrl: append punycode
+    contentToCopy = emojis.map((emoji) => emojiToPunycode(emoji)).join("\n");
+    isUsingPunycode = true;
+    try {
+      const currentClipboard = await navigator.clipboard.readText();
+      contentToCopy = currentClipboard + "\n" + contentToCopy;
       copiedCount += emojis.length;
-    } else {
+    } catch (err) {
+      console.warn("Could not read clipboard for append:", err);
       copiedCount = emojis.length;
     }
-
-    await navigator.clipboard.writeText(emojiString);
-
-    if (event.ctrlKey) {
-      showToast(`Appended ${emojis.length} emojis from ${categoryName}!`);
-    } else {
-      showToast(`Copied ${emojis.length} emojis from ${categoryName}!`);
+  } else if (event.metaKey) {
+    // Win/Cmd key alone: copy punycode
+    contentToCopy = emojis.map((emoji) => emojiToPunycode(emoji)).join("\n");
+    isUsingPunycode = true;
+    copiedCount = emojis.length;
+  } else if (event.ctrlKey) {
+    // Ctrl key alone: append emojis
+    contentToCopy = emojis.join("\n");
+    try {
+      const currentClipboard = await navigator.clipboard.readText();
+      contentToCopy = currentClipboard + "\n" + contentToCopy;
+      copiedCount += emojis.length;
+    } catch (err) {
+      console.warn("Could not read clipboard for append:", err);
+      copiedCount = emojis.length;
     }
+  } else {
+    // No modifier: copy emojis normally
+    contentToCopy = emojis.join("\n");
+    copiedCount = emojis.length;
+  }
+
+  try {
+    await navigator.clipboard.writeText(contentToCopy);
+
+    // Show appropriate toast message
+    const actionType =
+      (event.metaKey && event.ctrlKey) || event.ctrlKey ? "Appended" : "Copied";
+    const contentType = isUsingPunycode ? "punycode" : "emojis";
+    showToast(
+      `${actionType} ${emojis.length} ${contentType} from ${categoryName}!`
+    );
 
     // Update counter
     document.getElementById("copiedCount").textContent = copiedCount;
   } catch (err) {
     console.error("Failed to copy: ", err);
-    showToast("Failed to copy emojis", "error");
+    showToast("Failed to copy content", "error");
   }
 }
 

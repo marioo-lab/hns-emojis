@@ -32,8 +32,10 @@ This Emoji Collector loads the most comprehensive and up-to-date emoji collectio
 
 - **Single Click**: Copy one emoji
 - **Ctrl + Click**: Append emoji to your current clipboard (keeps adding to what you already copied)
-- **Cmd + Click** (Mac): Copy the emoji's punycode/Unicode format instead
+- **Win/Cmd + Click** (Mac): Copy the emoji's punycode/Unicode format instead
+- **Win/Cmd + Ctrl + Click**: Append punycode to your current clipboard (keeps adding to what you already copied)
 - **"Copy All" Button**: Copy all emojis from a category at once
+- **"Win/Cmd + Copy All" Button**: Copy all punycodes from a category at once
 
 ### **Display Options**
 
