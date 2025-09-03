@@ -46,6 +46,10 @@ function toggleFavorite(emoji) {
   }
   saveFavorites();
 
+  // Force complete rebuild by clearing container and resetting state
+  document.getElementById("categoriesContainer").innerHTML = "";
+  currentDisplayedCategories = 0;
+
   // Re-render to update the favorites category and button states
   const searchTerm = document.getElementById("searchInput").value.trim();
   renderCategories(searchTerm);
@@ -350,6 +354,7 @@ function renderCategories(searchTerm = "") {
   }
 
   let hasResults = false;
+  console.log(currentDisplayedCategories);
 
   // Prepare categories to render, with favorites first
   if (currentDisplayedCategories === 0) {
