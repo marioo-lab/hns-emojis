@@ -181,6 +181,10 @@ async function loadFromLocalJSON() {
     "card-suit-symbol-pack.json",
     "chess-symbol-pack.json",
     "star-symbol-pack.json",
+    "heart-symbol-pack.json",
+    "gender-symbol-pack.json",
+    "weather-symbol-pack.json",
+    "latin-cross-symbol-pack.json",
   ];
 
   const localData = {};
