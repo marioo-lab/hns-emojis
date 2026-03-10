@@ -3,7 +3,6 @@ let emojiData = {};
 let emojiNames = {}; // Maps emoji character -> name (e.g. "grinning face")
 let favorites = new Set();
 let copiedCount = 0;
-let showPunycode = true;
 let hideMinimallyQualified = false;
 let darkMode = false;
 
@@ -471,9 +470,7 @@ function loadMoreCategories() {
             const isFavorited = favorites.has(emoji);
             return `<div class="emoji-item" onclick="copyEmoji(event, '${emoji}', this)" title="Click to copy: ${emoji} (${punycode})">
               <span class="emoji-character">${emoji}</span>
-              <span class="emoji-punycode${
-                showPunycode ? " show" : ""
-              }">${punycode}</span>
+              <span class="emoji-punycode show">${punycode}</span>
               <button class="favorite-btn ${
                 isFavorited ? "favorited" : ""
               }" onclick="event.stopPropagation(); toggleFavorite('${emoji}')" title="${
@@ -522,30 +519,6 @@ function toggleHideMinimallyQualified() {
 function toggleCategory(categoryName) {
   const category = event.currentTarget.parentElement;
   category.classList.toggle("collapsed");
-}
-
-// Toggle punycode display
-function togglePunycode() {
-  showPunycode = !showPunycode;
-  const punycodeElements = document.querySelectorAll(".emoji-punycode");
-  const formatOptions = document.querySelector(".format-options");
-
-  punycodeElements.forEach((element) => {
-    if (showPunycode) {
-      element.classList.add("show");
-    } else {
-      element.classList.remove("show");
-    }
-  });
-
-  // Enable/disable format options
-  if (formatOptions) {
-    if (showPunycode) {
-      formatOptions.classList.add("enabled");
-    } else {
-      formatOptions.classList.remove("enabled");
-    }
-  }
 }
 
 // Copy emoji with optional punycode
@@ -755,11 +728,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // Hide minimally-qualified toggle
   document.getElementById("hideMinimallyQualified").addEventListener("change", toggleHideMinimallyQualified);
 
-  // Punycode toggle
-  document
-    .getElementById("showPunycode")
-    .addEventListener("change", togglePunycode);
-
   // Add scroll listener for infinite scroll
   window.addEventListener("scroll", handleScroll);
 
@@ -784,14 +752,6 @@ document.addEventListener("keydown", function (e) {
     }
   }
 
-  // Toggle punycode with Ctrl+P or Cmd+P
-  if ((e.ctrlKey || e.metaKey) && e.key === "p") {
-    e.preventDefault();
-    const punycodeToggle = document.getElementById("showPunycode");
-    punycodeToggle.checked = !punycodeToggle.checked;
-    togglePunycode();
-  }
-
   // Toggle dark mode with Ctrl+D or Cmd+D
   if ((e.ctrlKey || e.metaKey) && e.key === "d") {
     e.preventDefault();
@@ -805,6 +765,5 @@ document.addEventListener("keydown", function (e) {
 window.toggleCategory = toggleCategory;
 window.copyEmoji = copyEmoji;
 window.copyAllEmojis = copyAllEmojis;
-window.togglePunycode = togglePunycode;
 window.toggleDarkMode = toggleDarkMode;
 window.toggleFavorite = toggleFavorite;
