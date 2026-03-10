@@ -1,5 +1,6 @@
 // Global Variables
 let emojiData = {};
+let emojiNames = {}; // Maps emoji character -> name (e.g. "grinning face")
 let favorites = new Set();
 let copiedCount = 0;
 let showPunycode = false;
@@ -284,10 +285,11 @@ function parseUnicodeEmojiData(textData) {
             (showAll && status === "minimally-qualified") ||
             status === "component"
           ) {
-            // Extract the actual emoji character (first part before any text)
-            const emojiMatch = emojiPart.match(/^(\S+)/);
+            // Extract the actual emoji character and its name
+            const emojiMatch = emojiPart.match(/^(\S+)\s+E[\d.]+\s+(.+)$/);
             if (emojiMatch) {
               const emoji = emojiMatch[1];
+              emojiNames[emoji] = emojiMatch[2].trim().toLowerCase();
 
               // Use a combination of group and subgroup for better categorization
               let categoryName = currentGroup;
@@ -370,10 +372,13 @@ function renderCategories(searchTerm = "") {
 
       // Apply search filter to favorites if searching
       if (searchTerm) {
+        const term = searchTerm.toLowerCase();
         favoritesArray = favoritesArray.filter(
           (emoji) =>
             emoji.includes(searchTerm) ||
-            "favorites".toLowerCase().includes(searchTerm.toLowerCase())
+            "favorites".includes(term) ||
+            (emojiNames[emoji] && emojiNames[emoji].includes(term)) ||
+            emojiToPunycode(emoji).toLowerCase().includes(term)
         );
       }
 
@@ -389,10 +394,13 @@ function renderCategories(searchTerm = "") {
 
       // Apply search filter
       if (searchTerm) {
+        const term = searchTerm.toLowerCase();
         filteredEmojis = emojis.filter(
           (emoji) =>
             emoji.includes(searchTerm) ||
-            categoryName.toLowerCase().includes(searchTerm.toLowerCase())
+            categoryName.toLowerCase().includes(term) ||
+            (emojiNames[emoji] && emojiNames[emoji].includes(term)) ||
+            emojiToPunycode(emoji).toLowerCase().includes(term)
         );
       }
 
