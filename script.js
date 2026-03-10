@@ -3,8 +3,8 @@ let emojiData = {};
 let emojiNames = {}; // Maps emoji character -> name (e.g. "grinning face")
 let favorites = new Set();
 let copiedCount = 0;
-let showPunycode = false;
-let showAll = false;
+let showPunycode = true;
+let hideMinimallyQualified = false;
 let darkMode = false;
 
 // Infinite scroll variables
@@ -282,7 +282,7 @@ function parseUnicodeEmojiData(textData) {
           // Include fully-qualified, minimally-qualified, and component emojis
           if (
             status === "fully-qualified" ||
-            (showAll && status === "minimally-qualified") ||
+            (!hideMinimallyQualified && status === "minimally-qualified") ||
             status === "component"
           ) {
             // Extract the actual emoji character and its name
@@ -512,8 +512,8 @@ function updateStats() {
   document.getElementById("copiedCount").textContent = copiedCount;
 }
 
-function toggleShowAll() {
-  showAll = !showAll;
+function toggleHideMinimallyQualified() {
+  hideMinimallyQualified = !hideMinimallyQualified;
 
   loadEmojiData();
 }
@@ -752,8 +752,8 @@ document.addEventListener("DOMContentLoaded", function () {
     .getElementById("darkMode")
     .addEventListener("change", toggleDarkMode);
 
-  //All toggle
-  document.getElementById("showAll").addEventListener("change", toggleShowAll);
+  // Hide minimally-qualified toggle
+  document.getElementById("hideMinimallyQualified").addEventListener("change", toggleHideMinimallyQualified);
 
   // Punycode toggle
   document
